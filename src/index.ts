@@ -3,7 +3,7 @@
  *
  * Manages gob background jobs from within pi.
  * Connects to the gob daemon via Unix socket for real-time job monitoring.
- * Shows a widget below the editor with running jobs.
+ * Emits powerbar:update events with segment id "gob" showing running jobs.
  * Use /gob to view and interact with running and stopped jobs.
  */
 
@@ -11,10 +11,10 @@ import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-age
 import { DynamicBorder } from "@mariozechner/pi-coding-agent";
 import { Container, Key, matchesKey, type SelectItem, SelectList, Text } from "@mariozechner/pi-tui";
 import { DaemonClient } from "./daemon-client.js";
+import { formatJobSegment } from "./segment.js";
 import type { Event, JobResponse } from "./types.js";
-import { renderJobWidget } from "./widget.js";
 
-const WIDGET_KEY = "gob-jobs";
+const SEGMENT_ID = "gob";
 const RECONNECT_DELAY_MS = 5000;
 const TICK_INTERVAL_MS = 1000;
 
@@ -31,32 +31,28 @@ export default function (pi: ExtensionAPI) {
 	let unsubscribe: (() => void) | undefined;
 	let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 	let tickInterval: ReturnType<typeof setInterval> | undefined;
-	let sessionCtx: ExtensionContext | undefined;
 
 	/**
-	 * Update the widget with current running jobs.
+	 * Emit a powerbar:update event with current running jobs.
 	 */
-	function updateWidget(): void {
-		if (!sessionCtx?.hasUI) return;
-
+	function updateSegment(): void {
 		const jobs = Array.from(runningJobs.values());
 
 		if (jobs.length === 0) {
-			sessionCtx.ui.setWidget(WIDGET_KEY, undefined);
+			// Clear the segment
+			pi.events.emit("powerbar:update", { id: SEGMENT_ID });
 			stopTick();
 			return;
 		}
 
-		sessionCtx.ui.setWidget(
-			WIDGET_KEY,
-			(_tui, theme) => {
-				return {
-					render: (width: number) => renderJobWidget(jobs, theme, width),
-					invalidate: () => {},
-				};
-			},
-			{ placement: "belowEditor" },
-		);
+		const segment = formatJobSegment(jobs);
+
+		pi.events.emit("powerbar:update", {
+			id: SEGMENT_ID,
+			text: segment.text,
+			icon: segment.icon,
+			color: segment.color,
+		});
 
 		startTick();
 	}
@@ -68,7 +64,7 @@ export default function (pi: ExtensionAPI) {
 		if (tickInterval) return;
 		tickInterval = setInterval(() => {
 			if (runningJobs.size > 0) {
-				updateWidget();
+				updateSegment();
 			} else {
 				stopTick();
 			}
@@ -115,7 +111,7 @@ export default function (pi: ExtensionAPI) {
 				break;
 		}
 
-		updateWidget();
+		updateSegment();
 	}
 
 	/**
@@ -144,7 +140,7 @@ export default function (pi: ExtensionAPI) {
 					runningJobs.set(job.id, job);
 				}
 			}
-			updateWidget();
+			updateSegment();
 		} catch {
 			// Failed to list, schedule reconnect
 			scheduleReconnect();
@@ -159,7 +155,7 @@ export default function (pi: ExtensionAPI) {
 				// Subscription disconnected, try to reconnect
 				unsubscribe = undefined;
 				runningJobs.clear();
-				updateWidget();
+				updateSegment();
 				scheduleReconnect();
 			},
 		);
@@ -196,20 +192,16 @@ export default function (pi: ExtensionAPI) {
 	// ── Lifecycle ──────────────────────────────────────────
 
 	pi.on("session_start", async (_event, ctx) => {
-		sessionCtx = ctx;
 		sessionCwd = ctx.cwd;
 		await connectAndSubscribe();
 	});
 
 	pi.on("session_shutdown", async () => {
 		cleanup();
-		if (sessionCtx?.hasUI) {
-			sessionCtx.ui.setWidget(WIDGET_KEY, undefined);
-		}
-		sessionCtx = undefined;
+		pi.events.emit("powerbar:update", { id: SEGMENT_ID });
 	});
 
-	// ── Job list UI (existing functionality, now with protocol support) ──
+	// ── Job list UI ──
 
 	async function fetchJobs(): Promise<JobResponse[]> {
 		// Try daemon protocol first

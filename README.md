@@ -4,8 +4,7 @@ A [pi](https://github.com/badlogic/pi-mono) extension for managing [gob](https:/
 
 ## Features
 
-- **Live job widget** — Running jobs displayed below the editor, updated in real time via daemon connection
-- **Progress bars** — Jobs with historical run data show a progress bar based on average duration
+- **Powerbar segment** — Running jobs displayed in the powerbar via the `gob` segment, updated in real time via daemon connection
 - **`/gob` command** — Interactive list of all jobs with actions (logs, stop, start, restart, remove)
 - **Daemon protocol** — Connects directly to the gob daemon Unix socket for instant updates, with CLI fallback
 
@@ -17,17 +16,14 @@ pi install npm:@juanibiapina/pi-gob
 
 ## Usage
 
-### Widget
+### Powerbar Segment
 
-The widget appears automatically below the editor when there are running gob jobs in the current working directory. It disappears when all jobs stop.
+Add `gob` to your powerbar left or right segments in powerbar settings. The segment appears when there are running gob jobs in the current working directory.
 
-```
-● npm run dev │ ● make build ████░░░ 57%
-```
+- 1 job: `⚙ npm run dev`
+- Multiple jobs: `⚙ 2 jobs`
 
-- Jobs without historical stats show just the command name
-- Jobs with previous runs show a progress bar based on average duration
-- The widget updates in real time via the gob daemon event stream
+The segment updates in real time via the gob daemon event stream.
 
 ### `/gob` Command
 
@@ -43,7 +39,7 @@ Use `/gob` to open an interactive job list. Navigate with arrow keys, press Ente
 
 ## How It Works
 
-The extension connects to the gob daemon's Unix socket (`$XDG_RUNTIME_DIR/gob/daemon.sock`) and subscribes to job events. If the daemon isn't running, the extension retries every 5 seconds and falls back to the `gob` CLI for the `/gob` command.
+The extension connects to the gob daemon's Unix socket (`$XDG_RUNTIME_DIR/gob/daemon.sock`) and subscribes to job events. When jobs change, it emits `powerbar:update` events with segment id `gob`. If the daemon isn't running, the extension retries every 5 seconds and falls back to the `gob` CLI for the `/gob` command.
 
 ## License
 
