@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.3.0
+
 ### Changed
 
 - Replaced standalone widget with a powerbar segment (`gob`) via `powerbar:update` events
