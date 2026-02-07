@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0
 
 - Register `gob` powerbar segment via `powerbar:register-segment` event for ordered multi-select settings
 
