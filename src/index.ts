@@ -19,6 +19,9 @@ const RECONNECT_DELAY_MS = 5000;
 const TICK_INTERVAL_MS = 1000;
 
 export default function (pi: ExtensionAPI) {
+	// Register powerbar segment
+	pi.events.emit("powerbar:register-segment", { id: "gob", label: "Gob Jobs" });
+
 	const client = new DaemonClient();
 
 	// Map of running jobs by ID (only running jobs for the current workdir)
