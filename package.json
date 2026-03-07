@@ -1,6 +1,6 @@
 {
 	"name": "@juanibiapina/pi-gob",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"description": "Pi extension for managing gob background jobs",
 	"type": "module",
 	"main": "dist/index.js",
@@ -24,7 +24,9 @@
 		"background-jobs"
 	],
 	"pi": {
-		"extensions": ["./dist/index.js"]
+		"extensions": [
+			"./dist/index.js"
+		]
 	},
 	"author": "Juan Ibiapina",
 	"license": "MIT",
