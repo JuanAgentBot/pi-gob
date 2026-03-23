@@ -16,6 +16,11 @@ import type { JobResponse } from "./types.js";
 
 const BAR_WIDTH = 8;
 
+/** Display label for a job: description if set, otherwise the raw command. */
+function jobLabel(job: JobResponse): string {
+	return job.description || job.command.join(" ");
+}
+
 export interface SegmentData {
 	text: string;
 	icon: string;
@@ -59,8 +64,7 @@ export function formatJobSegment(jobs: JobResponse[]): SegmentData {
 	for (const job of jobs) {
 		const pct = jobProgress(job);
 		if (pct !== undefined) {
-			const cmd = job.command.join(" ");
-			withBar.push(`${cmd} ${renderBar(pct)}`);
+			withBar.push(`${jobLabel(job)} ${renderBar(pct)}`);
 		} else {
 			withoutBar.push(job);
 		}
@@ -69,7 +73,7 @@ export function formatJobSegment(jobs: JobResponse[]): SegmentData {
 	const parts: string[] = [...withBar];
 
 	if (withoutBar.length === 1) {
-		parts.push(withoutBar[0].command.join(" "));
+		parts.push(jobLabel(withoutBar[0]));
 	} else if (withoutBar.length > 1) {
 		parts.push(`${withoutBar.length} jobs`);
 	}

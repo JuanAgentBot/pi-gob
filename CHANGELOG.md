@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Prefer job description over command in segment display (thanks @HazAT for the idea in PR #1)
+
 ## [0.4.1] - 2026-03-07
 
 ### Fixed
