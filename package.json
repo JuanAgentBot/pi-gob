@@ -1,6 +1,6 @@
 {
 	"name": "@juanibiapina/pi-gob",
-	"version": "0.4.1",
+	"version": "0.5.0",
 	"description": "Pi extension for managing gob background jobs",
 	"type": "module",
 	"main": "dist/index.js",
@@ -37,14 +37,13 @@
 	"engines": {
 		"node": ">=20.0.0"
 	},
-	"dependencies": {},
 	"peerDependencies": {
 		"@mariozechner/pi-coding-agent": "*",
 		"@mariozechner/pi-tui": "*"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.5",
-		"@mariozechner/pi-coding-agent": "^0.51.1",
+		"@mariozechner/pi-coding-agent": "^0.62.0",
 		"@types/node": "^22.10.5",
 		"typescript": "^5.9.2"
 	}
